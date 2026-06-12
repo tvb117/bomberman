@@ -101,7 +101,6 @@ export class Game {
         diseaseT: 0,
         flight: null,
         airCool: 0,
-        prevBomb: false,
         prevPunch: false,
       }
     })
@@ -252,7 +251,6 @@ export class Game {
 
     if (p.flight) {
       this.updatePlayerFlight(p, dt)
-      p.prevBomb = input.bomb
       p.prevPunch = input.punch
       return
     }
@@ -290,11 +288,11 @@ export class Game {
     this.checkPickup(p)
     this.updateBombPasses(p)
 
-    // Bomb drop: edge-triggered, or continuous with diarrhea.
-    const wantsBomb = (input.bomb && !p.prevBomb) || p.disease === Disease.Diarrhea
+    // Hold-to-place: holding the button lays a bomb on every tile you cross
+    // (one per tile, capped by maxBombs) — so extra-bomb powerups make trails.
+    const wantsBomb = input.bomb || p.disease === Disease.Diarrhea
     if (wantsBomb) this.tryPlaceBomb(p)
     if (input.punch && !p.prevPunch) this.tryPunch(p)
-    p.prevBomb = input.bomb
     p.prevPunch = input.punch
   }
 

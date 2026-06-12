@@ -111,7 +111,6 @@ export interface Player {
   flight: Flight | null
   /** Grace period after landing before a trampoline can re-launch. */
   airCool: number
-  prevBomb: boolean
   prevPunch: boolean
 }
 

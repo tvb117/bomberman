@@ -28,7 +28,6 @@ const OUTLINE = '#2e3440'
 export class Renderer {
   private ctx: CanvasRenderingContext2D
   private particles: Particle[] = []
-  private shake = 0
   private time = 0
   /** Per-player walk-cycle state, advanced by distance travelled. */
   private gait = new Map<number, { x: number; y: number; phase: number; moving: number }>()
@@ -48,8 +47,6 @@ export class Renderer {
     for (const e of events) {
       switch (e.type) {
         case 'explosion':
-          // Kept subtle on purpose: a nudge, not an earthquake.
-          this.shake = Math.min(this.shake + 2.2, 5)
           this.burst((e.x + 0.5) * TILE, (e.y + 0.5) * TILE, 18, ['#ffd54f', '#ff7043', '#ffee58'], 4)
           break
         case 'crate':
@@ -57,7 +54,6 @@ export class Renderer {
           break
         case 'death':
           this.burst(e.x * TILE, e.y * TILE, 26, [PLAYER_COLORS[e.player], '#ffffff'], 5)
-          this.shake = Math.min(this.shake + 1.5, 5)
           break
         case 'pickup':
         case 'reveal':
@@ -67,7 +63,6 @@ export class Renderer {
           this.burst((e.x + 0.5) * TILE, (e.y + 0.5) * TILE, 12, ['#80d8ff', '#ffffff'], 3)
           break
         case 'sdBlock':
-          this.shake = Math.min(this.shake + 0.7, 3)
           this.burst((e.x + 0.5) * TILE, (e.y + 0.5) * TILE, 6, ['#90a4ae', '#cfd8dc'], 3)
           break
         default:
@@ -103,11 +98,6 @@ export class Renderer {
     this.drawHud(game)
 
     ctx.translate(0, HUD_H)
-    if (this.shake > 0.1) {
-      ctx.translate((Math.random() - 0.5) * this.shake, (Math.random() - 0.5) * this.shake)
-      this.shake *= Math.pow(0.001, dt)
-    }
-
     this.drawBoard(game)
     this.drawPowerups(game)
     this.drawBombs(game)
