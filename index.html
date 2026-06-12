@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atomic Blast</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 50% 20%, #1f2a4d 0%, #0d1126 70%);
+        font-family: 'Avenir Next', 'Segoe UI', sans-serif;
+        color: #e8eaf6;
+      }
+      #wrap {
+        position: relative;
+      }
+      canvas {
+        display: block;
+        max-width: calc(100vw - 24px);
+        max-height: calc(100vh - 60px);
+        height: auto;
+        border-radius: 10px;
+        box-shadow: 0 12px 60px rgba(0, 0, 0, 0.6);
+        image-rendering: auto;
+      }
+      .overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        background: rgba(10, 13, 30, 0.92);
+        border-radius: 10px;
+        text-align: center;
+        padding: 18px;
+        overflow-y: auto;
+      }
+      .hidden {
+        display: none !important;
+      }
+      h1 {
+        margin: 0;
+        font-size: 44px;
+        letter-spacing: 3px;
+        background: linear-gradient(180deg, #ffd54f, #ff7043);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        text-shadow: 0 4px 24px rgba(255, 112, 67, 0.35);
+      }
+      .tagline {
+        margin: -8px 0 6px;
+        color: #9fa8da;
+        font-size: 14px;
+      }
+      .row {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      label {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 12px;
+        color: #9fa8da;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      select {
+        background: #283367;
+        color: #fff;
+        border: 1px solid #3f51b5;
+        border-radius: 6px;
+        padding: 7px 10px;
+        font-size: 15px;
+      }
+      button {
+        background: linear-gradient(180deg, #ff8a65, #f4511e);
+        color: #fff;
+        border: 0;
+        border-radius: 8px;
+        padding: 12px 38px;
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        cursor: pointer;
+        box-shadow: 0 4px 18px rgba(244, 81, 30, 0.45);
+      }
+      button:hover {
+        filter: brightness(1.1);
+      }
+      button.secondary {
+        background: #3949ab;
+        box-shadow: none;
+        font-size: 15px;
+        padding: 9px 22px;
+      }
+      table {
+        border-collapse: collapse;
+        font-size: 12.5px;
+        color: #c5cae9;
+      }
+      td {
+        padding: 3px 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        text-align: left;
+      }
+      td:first-child {
+        font-weight: 700;
+      }
+      #controls th {
+        padding: 3px 8px;
+        font-size: 11px;
+        color: #7986cb;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .keybtn {
+        background: #283367;
+        color: #e8eaf6;
+        border: 1px solid #3f51b5;
+        border-radius: 6px;
+        padding: 4px 8px;
+        min-width: 56px;
+        font-size: 12.5px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: none;
+        letter-spacing: 0;
+      }
+      .keybtn:hover {
+        background: #34408a;
+        filter: none;
+      }
+      .keybtn.listening {
+        background: #f4511e;
+        border-color: #ff8a65;
+        animation: pulse 0.8s infinite alternate;
+      }
+      @keyframes pulse {
+        from { box-shadow: 0 0 0 0 rgba(244, 81, 30, 0.6); }
+        to { box-shadow: 0 0 0 6px rgba(244, 81, 30, 0); }
+      }
+      .pdot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 6px;
+        vertical-align: middle;
+      }
+      .hint {
+        font-size: 12px;
+        color: #7986cb;
+      }
+      #roundMsg {
+        font-size: 34px;
+        font-weight: 800;
+      }
+      #roundSub {
+        font-size: 16px;
+        color: #9fa8da;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="wrap">
+      <canvas id="game" width="720" height="680"></canvas>
+
+      <div id="menu" class="overlay">
+        <h1>💣 ATOMIC BLAST 💥</h1>
+        <p class="tagline">Last bomber standing wins. Kick it, punch it, don't catch the skull.</p>
+        <div class="row">
+          <label>Humans
+            <select id="optHumans">
+              <option value="0">0 (bot battle!)</option>
+              <option value="1" selected>1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+          </label>
+          <label>Bots
+            <select id="optBots">
+              <option value="0">0</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </label>
+          <label>Arena
+            <select id="optArena">
+              <option value="classic">Classic</option>
+              <option value="gadgets">Trampoline Park</option>
+              <option value="conveyor">Conveyor Chaos</option>
+              <option value="random" selected>Random</option>
+            </select>
+          </label>
+          <label>Wins to take match
+            <select id="optWins">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="5">5</option>
+            </select>
+          </label>
+          <label>Round time
+            <select id="optTime">
+              <option value="60">1:00</option>
+              <option value="120" selected>2:00</option>
+              <option value="180">3:00</option>
+            </select>
+          </label>
+        </div>
+        <button id="btnStart">START&nbsp;GAME</button>
+        <div id="controls"></div>
+        <button id="btnResetKeys" class="secondary">Reset controls</button>
+        <p class="hint">Click any key to rebind it · P pause · M mute · Esc back to menu · Walk into bombs to kick them (boot powerup)</p>
+      </div>
+
+      <div id="round" class="overlay hidden">
+        <div id="roundMsg"></div>
+        <div id="roundSub"></div>
+        <div class="row hidden" id="matchButtons">
+          <button id="btnAgain">PLAY&nbsp;AGAIN</button>
+          <button id="btnMenu" class="secondary">MENU</button>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
