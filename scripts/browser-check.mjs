@@ -38,15 +38,22 @@ const s1 = await page.evaluate(() => window.__game())
 console.log('t=1.5s', JSON.stringify(s1))
 if (s1.players.length !== 4) fail('expected 4 players')
 
-// Let the bots fight; verify movement and bombing happened.
-const start = await page.evaluate(() => window.__game())
-await page.waitForTimeout(6000)
-const mid = await page.evaluate(() => window.__game())
-console.log('t=7.5s', JSON.stringify(mid))
-const moved = mid.players.some(
-  (p, i) => Math.abs(p.x - start.players[i].x) + Math.abs(p.y - start.players[i].y) > 0.5,
-)
-if (!moved) fail('bots never moved')
+// Let the bots fight; verify movement and bombing happened. Bots loop back
+// near their spawn early on, so accumulate path length over many samples
+// instead of comparing two snapshots.
+let prev = await page.evaluate(() => window.__game())
+const travelled = prev.players.map(() => 0)
+for (let i = 0; i < 12; i++) {
+  await page.waitForTimeout(500)
+  const cur = await page.evaluate(() => window.__game())
+  cur.players.forEach((p, j) => {
+    travelled[j] += Math.abs(p.x - prev.players[j].x) + Math.abs(p.y - prev.players[j].y)
+  })
+  prev = cur
+}
+const mid = prev
+console.log('t=7.5s', JSON.stringify(mid), 'travelled', travelled.map((t) => t.toFixed(1)))
+if (!travelled.some((t) => t > 1)) fail('bots never moved')
 if (mid.time < 5) fail('simulation clock not advancing')
 await page.screenshot({ path: 'shots/3-mid-game.png' })
 
